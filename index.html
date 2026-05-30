@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ISM App</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --blue: #1B6CA8;
+    --blue-light: #2980B9;
+    --blue-pale: #EBF5FB;
+    --hot: #E74C3C;
+    --warm: #F39C12;
+    --cool: #27AE60;
+    --grey: #95a5a6;
+    --surface: #ffffff;
+    --border: #e8e8e8;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--white);
+    color: var(--black);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ШАПКА ── */
+  .app-header {
+    background: var(--black);
+    padding: 16px 20px 12px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+  .app-logo span { color: var(--blue-light); }
+
+  /* ── ПЕРЕКЛЮЧАТЕЛЬ ── */
+  .mode-switch {
+    display: flex;
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .mode-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--grey);
+    background: transparent;
+  }
+  .mode-btn.active {
+    background: var(--blue);
+    color: white;
+  }
+
+  /* ── ЭКРАНЫ ── */
+  .screen { display: none; padding: 0 0 80px; }
+  .screen.active { display: block; }
+
+  /* ── КАРТОЧКИ СТАТИСТИКИ ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 16px 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.hot::before { background: var(--hot); }
+  .stat-card.warm::before { background: var(--warm); }
+  .stat-card.cool::before { background: var(--blue); }
+  .stat-card.done::before { background: var(--cool); }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--black);
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--grey);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+  .stat-icon { font-size: 20px; margin-bottom: 8px; }
+
+  /* ── СЕКЦИИ ── */
+  .section {
+    padding: 20px 16px 0;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  /* ── ФИЛЬТРЫ ── */
+  .filters {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: white;
+    color: var(--black);
+  }
+  .filter-chip.active {
+    background: var(--black);
+    color: white;
+    border-color: var(--black);
+  }
+
+  /* ── ЛИД КАРТОЧКИ ── */
+  .leads-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .lead-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .lead-card:active { transform: scale(0.98); }
+  .lead-card.hot-lead { border-color: #fad7d7; }
+  .lead-card.hot-lead::after {
+    content: '🔥';
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 16px;
+  }
+
+  .lead-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .lead-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--black);
+  }
+  .lead-time {
+    font-size: 11px;
+    color: var(--grey);
+    margin-top: 2px;
+  }
+
+  .lead-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-new      { background: #EBF5FB; color: #1565C0; }
+  .status-working  { background: #FFF8E1; color: #F57F17; }
+  .status-meeting  { background: #E8F5E9; color: #2E7D32; }
+  .status-contract { background: #F3E5F5; color: #6A1B9A; }
+  .status-building { background: #E0F7FA; color: #00695C; }
+  .status-done     { background: #E8F5E9; color: #1B5E20; }
+  .status-reject   { background: #F5F5F5; color: #9E9E9E; }
+
+  .lead-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .lead-tag {
+    background: var(--blue-pale);
+    color: var(--blue);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .lead-tag.budget { background: #FEF9E7; color: #B7770D; }
+  .lead-tag.hot-tag { background: #FDEDEC; color: #C0392B; }
+
+  .lead-phone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--blue);
+    font-weight: 500;
+  }
+
+  /* ── ДЕТАЛИ ЛИДА ── */
+  .lead-detail {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: white;
+    z-index: 200;
+    overflow-y: auto;
+  }
+  .lead-detail.open { display: block; }
+
+  .detail-header {
+    background: var(--black);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+  }
+  .back-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .detail-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .detail-body { padding: 20px 16px; }
+
+  .detail-section {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .detail-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row-label { color: var(--grey); font-weight: 500; }
+  .detail-row-value { font-weight: 600; color: var(--black); text-align: right; }
+
+  /* Статус selector */
+  .status-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .status-option {
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .status-option.selected { border-color: var(--black); }
+
+  /* Кнопки действий */
+  .action-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .action-btn {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .action-btn:active { transform: scale(0.97); }
+  .btn-call { background: var(--cool); color: white; }
+  .btn-msg  { background: var(--blue); color: white; }
+  .btn-save { background: var(--black); color: white; }
+
+  /* ── КЛИЕНТСКИЙ ЭКРАН ── */
+  .client-hero {
+    background: var(--black);
+    padding: 24px 20px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .client-hero::before {
+    content: 'ISM';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    color: rgba(255,255,255,0.04);
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    line-height: 1;
+  }
+  .client-greeting {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .client-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  /* Прогресс заявки */
+  .progress-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 4px;
+  }
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  .progress-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    border: 2px solid rgba(255,255,255,0.15);
+    position: relative;
+    z-index: 1;
+  }
+  .progress-dot.done {
+    background: var(--cool);
+    border-color: var(--cool);
+    color: white;
+  }
+  .progress-dot.current {
+    background: var(--blue-light);
+    border-color: var(--blue-light);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(41,128,185,0.3);
+  }
+  .progress-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .progress-dot.done ~ .progress-label,
+  .progress-dot.current ~ .progress-label { color: rgba(255,255,255,0.7); }
+  .progress-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 -2px;
+    position: relative;
+    top: -10px;
+  }
+  .progress-line.done { background: var(--cool); }
+
+  /* Клиент инфо */
+  .client-info-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 16px 16px 0;
+    border: 1px solid var(--border);
+  }
+  .client-info-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  /* Контакт менеджера */
+  .manager-card {
+    background: linear-gradient(135deg, var(--blue) 0%, #1a5276 100%);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 16px 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .manager-info { flex: 1; }
+  .manager-label { font-size: 11px; opacity: 0.7; margin-bottom: 4px; }
+  .manager-name { font-size: 15px; font-weight: 700; }
+  .manager-phone { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .manager-call-btn {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    border: none;
+    color: white;
+  }
+
+  /* О технологии */
+  .tech-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 16px 0;
+  }
+  .tech-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .tech-icon { font-size: 24px; margin-bottom: 8px; }
+  .tech-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--blue);
+    line-height: 1;
+  }
+  .tech-desc { font-size: 11px; color: var(--grey); margin-top: 2px; line-height: 1.4; }
+
+  /* Калькулятор */
+  .calculator {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 16px 0;
+    border: 1px solid var(--border);
+  }
+  .calc-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .calc-input-group { margin-bottom: 12px; }
+  .calc-label { font-size: 12px; color: var(--grey); margin-bottom: 4px; }
+  .calc-slider {
+    width: 100%;
+    accent-color: var(--blue);
+  }
+  .calc-value { font-size: 13px; font-weight: 600; color: var(--blue); margin-top: 4px; }
+  .calc-result {
+    background: var(--blue-pale);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 8px;
+  }
+  .calc-result-label { font-size: 11px; color: var(--grey); }
+  .calc-result-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--blue);
+    line-height: 1;
+  }
+  .calc-result-compare { font-size: 11px; color: var(--grey); margin-top: 4px; }
+
+  /* ── НАВИГАЦИЯ ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px 0;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+  }
+  .nav-icon { font-size: 20px; }
+  .nav-label { font-size: 10px; color: var(--grey); font-weight: 500; }
+  .nav-item.active .nav-label { color: var(--blue); font-weight: 700; }
+
+  /* Пустые состояния */
+  .empty-state {
+    text-align: center;
+    padding: 48px 32px;
+    color: var(--grey);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; font-weight: 500; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+
+  /* Loading */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--black);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 1000;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<div class="app-header">
+  <div class="app-logo">IS<span>M</span></div>
+  <div class="mode-switch" id="modeSwitch">
+    <button class="mode-btn active" onclick="setMode('admin')">Админ</button>
+    <button class="mode-btn" onclick="setMode('client')">Клиент</button>
+  </div>
+</div>
+
+<!-- ЭКРАН АДМИНИСТРАТОРА -->
+<div id="adminScreen" class="screen active">
+
+  <!-- Статистика -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card hot">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-num" id="statHot">—</div>
+      <div class="stat-label">Горячих лидов</div>
+    </div>
+    <div class="stat-card warm">
+      <div class="stat-icon">📞</div>
+      <div class="stat-num" id="statWorking">—</div>
+      <div class="stat-label">В работе</div>
+    </div>
+    <div class="stat-card cool">
+      <div class="stat-icon">📅</div>
+      <div class="stat-num" id="statMeeting">—</div>
+      <div class="stat-label">Замеры</div>
+    </div>
+    <div class="stat-card done">
+      <div class="stat-icon">✅</div>
+      <div class="stat-num" id="statDone">—</div>
+      <div class="stat-label">Завершено</div>
+    </div>
+  </div>
+
+  <!-- Фильтры -->
+  <div class="filters" id="filterBar">
+    <div class="filter-chip active" onclick="filterLeads('all', this)">Все</div>
+    <div class="filter-chip" onclick="filterLeads('new', this)">🆕 Новые</div>
+    <div class="filter-chip" onclick="filterLeads('working', this)">📞 В работе</div>
+    <div class="filter-chip" onclick="filterLeads('meeting', this)">📅 Замер</div>
+    <div class="filter-chip" onclick="filterLeads('contract', this)">📝 Договор</div>
+    <div class="filter-chip" onclick="filterLeads('done', this)">✅ Готово</div>
+  </div>
+
+  <!-- Список лидов -->
+  <div class="leads-list" id="leadsList">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ЭКРАН КЛИЕНТА -->
+<div id="clientScreen" class="screen">
+  <!-- Hero с прогрессом -->
+  <div class="client-hero">
+    <div class="client-greeting">Добро пожаловать в</div>
+    <div class="client-name">ISM — IMPAC SYSTEM MONOLITH</div>
+
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;">Статус вашей заявки</div>
+    <div class="progress-track" id="progressTrack">
+      <!-- Генерируется JS -->
+    </div>
+  </div>
+
+  <!-- Инфо о заявке -->
+  <div class="client-info-card" id="clientInfoCard">
+    <div class="client-info-title">Ваша анкета</div>
+    <div id="clientProfile">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">Анкета не найдена</div>
+        <div class="empty-sub">Пройдите квалификацию в боте</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Менеджер -->
+  <div class="manager-card">
+    <div class="manager-info">
+      <div class="manager-label">Ваш менеджер</div>
+      <div class="manager-name">Фрол Валерьевич</div>
+      <div class="manager-phone">+7 708 239 35 72</div>
+    </div>
+    <button class="manager-call-btn" onclick="callManager()">📞</button>
+  </div>
+
+  <!-- О технологии -->
+  <div class="section" style="padding-top:20px;">
+    <div class="section-title">Технология ISM</div>
+  </div>
+  <div class="tech-cards">
+    <div class="tech-card">
+      <div class="tech-icon">🏠</div>
+      <div class="tech-num">9+</div>
+      <div class="tech-desc">баллов сейсмостойкость</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">💰</div>
+      <div class="tech-num">2×</div>
+      <div class="tech-desc">дешевле кирпича</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">⚡</div>
+      <div class="tech-num">6×</div>
+      <div class="tech-desc">энергоэффективнее</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-icon">📐</div>
+      <div class="tech-num">150</div>
+      <div class="tech-desc">м² в неделю монтаж</div>
+    </div>
+  </div>
+
+  <!-- Калькулятор -->
+  <div class="calculator">
+    <div class="calc-title">💡 Калькулятор стоимости</div>
+    <div class="calc-input-group">
+      <div class="calc-label">Площадь дома</div>
+      <input type="range" class="calc-slider" id="areaSlider" min="50" max="300" value="100" oninput="calcPrice()">
+      <div class="calc-value" id="areaValue">100 м²</div>
+    </div>
+    <div class="calc-result">
+      <div class="calc-result-label">Стоимость ISM (под ключ)</div>
+      <div class="calc-result-price" id="calcPrice">10 000 000 ₸</div>
+      <div class="calc-result-compare" id="calcCompare">Из кирпича обошлось бы ~20 000 000 ₸</div>
+    </div>
+  </div>
+</div>
+
+<!-- ДЕТАЛЬНЫЙ ВИД ЛИДА -->
+<div class="lead-detail" id="leadDetail">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">←</button>
+    <div class="detail-title" id="detailTitle">Карточка лида</div>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- НИЖНЯЯ НАВИГАЦИЯ (только для админа) -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="nav-item active" onclick="showAdminTab('leads', this)">
+    <span class="nav-icon">🔥</span>
+    <span class="nav-label">Лиды</span>
+  </button>
+  <button class="nav-item" onclick="showAdminTab('funnel', this)">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Воронка</span>
+  </button>
+  <button class="nav-item" onclick="showAdminTab('search', this)">
+    <span class="nav-icon">🔍</span>
+    <span class="nav-label">Поиск</span>
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID = '15RXcR1hazdRsvYh9bDaoQCb0p7avfj4WYkLudrpqsWk';
+const GAS_URL  = 'https://script.google.com/macros/s/AKfycbwnyFOOIqSroC2sNYsWQ8iZ24oZqueh0v1mz1rR1lH4RLXqOZXY5uIaFLvV-ocDVEyv/exec';
+
+let tg = window.Telegram && window.Telegram.WebApp;
+let currentMode = 'admin';
+let allLeads    = [];
+let currentFilter = 'all';
+let currentLead = null;
+
+// Статусы
+const STATUSES = [
+  { key:'new',      label:'🆕 Новый',           cls:'status-new',      bg:'#EBF5FB', color:'#1565C0' },
+  { key:'working',  label:'📞 В работе',         cls:'status-working',  bg:'#FFF8E1', color:'#F57F17' },
+  { key:'meeting',  label:'📅 Замер назначен',   cls:'status-meeting',  bg:'#E8F5E9', color:'#2E7D32' },
+  { key:'contract', label:'📝 Договор',           cls:'status-contract', bg:'#F3E5F5', color:'#6A1B9A' },
+  { key:'building', label:'🏗 Строительство',    cls:'status-building', bg:'#E0F7FA', color:'#00695C' },
+  { key:'done',     label:'✅ Готово',            cls:'status-done',     bg:'#E8F5E9', color:'#1B5E20' },
+  { key:'reject',   label:'❌ Отказ',             cls:'status-reject',   bg:'#F5F5F5', color:'#9E9E9E' },
+];
+
+const STEPS = ['Заявка', 'В работе', 'Замер', 'Договор', 'Стройка', 'Готово'];
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor('#0a0a0a');
+  }
+  initProgress();
+  loadLeads();
+  calcPrice();
+
+  // Определяем роль из tg.initDataUnsafe
+  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    var uid = String(tg.initDataUnsafe.user.id);
+    var adminIds = ['453800951'];
+    if (!adminIds.includes(uid)) {
+      setMode('client');
+      document.getElementById('modeSwitch').style.display = 'none';
+    }
+  }
+});
+
+// ── РЕЖИМЫ ──
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b, i) {
+    b.classList.toggle('active', (i === 0 && mode === 'admin') || (i === 1 && mode === 'client'));
+  });
+  document.getElementById('adminScreen').classList.toggle('active', mode === 'admin');
+  document.getElementById('clientScreen').classList.toggle('active', mode === 'client');
+  document.getElementById('bottomNav').style.display = mode === 'admin' ? 'flex' : 'none';
+}
+
+// ── ПРОГРЕСС КЛИЕНТА ──
+function initProgress(currentStep) {
+  currentStep = currentStep || 0;
+  var track = document.getElementById('progressTrack');
+  track.innerHTML = '';
+  STEPS.forEach(function(step, i) {
+    if (i > 0) {
+      var line = document.createElement('div');
+      line.className = 'progress-line' + (i <= currentStep ? ' done' : '');
+      track.appendChild(line);
+    }
+    var stepEl = document.createElement('div');
+    stepEl.className = 'progress-step';
+    var cls = i < currentStep ? 'done' : i === currentStep ? 'current' : '';
+    stepEl.innerHTML =
+      '<div class="progress-dot ' + cls + '">' + (i < currentStep ? '✓' : (i+1)) + '</div>' +
+      '<div class="progress-label">' + step + '</div>';
+    track.appendChild(stepEl);
+  });
+}
+
+// ── ЗАГРУЗКА ЛИДОВ ──
+function loadLeads() {
+  // Демо данные пока нет реального API
+  var demo = [
+    { id:'453800951', name:'Rustam Qabden', phone:'+7 702 403 5036', username:'qabdenr',
+      region:'Алматы', area:'100–150 м²', budget:'50–80 млн ₸', urgency:'Сейчас',
+      status:'new', date:'30.05.2026', hot:true },
+    { id:'1307494622', name:'Impas system ISM', phone:'+7 701 222 0063', username:'ADOMISM',
+      region:'Алматы', area:'50–100 м²', budget:'до 30 млн ₸', urgency:'1–3 месяца',
+      status:'working', date:'29.05.2026', hot:false },
+  ];
+  allLeads = demo;
+  updateStats(demo);
+  renderLeads(demo);
+}
+
+function updateStats(leads) {
+  document.getElementById('statHot').textContent     = leads.filter(function(l){return l.hot;}).length;
+  document.getElementById('statWorking').textContent = leads.filter(function(l){return l.status==='working';}).length;
+  document.getElementById('statMeeting').textContent = leads.filter(function(l){return l.status==='meeting';}).length;
+  document.getElementById('statDone').textContent    = leads.filter(function(l){return l.status==='done';}).length;
+}
+
+function filterLeads(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  var filtered = filter === 'all' ? allLeads : allLeads.filter(function(l){ return l.status === filter; });
+  renderLeads(filtered);
+}
+
+function renderLeads(leads) {
+  var list = document.getElementById('leadsList');
+  if (!leads.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Нет лидов</div><div class="empty-sub">Здесь появятся заявки</div></div>';
+    return;
+  }
+  list.innerHTML = leads.map(function(lead) {
+    var status = STATUSES.find(function(s){ return s.key === lead.status; }) || STATUSES[0];
+    return '<div class="lead-card' + (lead.hot ? ' hot-lead' : '') + '" onclick="openDetail(\'' + lead.id + '\')">' +
+      '<div class="lead-top">' +
+        '<div><div class="lead-name">' + lead.name + '</div><div class="lead-time">' + lead.date + '</div></div>' +
+        '<span class="lead-status ' + status.cls + '">' + status.label + '</span>' +
+      '</div>' +
+      '<div class="lead-tags">' +
+        '<span class="lead-tag">' + lead.region + '</span>' +
+        '<span class="lead-tag">' + lead.area + '</span>' +
+        '<span class="lead-tag budget">' + lead.budget + '</span>' +
+        (lead.urgency === 'Сейчас' ? '<span class="lead-tag hot-tag">🔥 ' + lead.urgency + '</span>' : '<span class="lead-tag">' + lead.urgency + '</span>') +
+      '</div>' +
+      '<div class="lead-phone">📱 ' + lead.phone + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── ДЕТАЛИ ЛИДА ──
+function openDetail(id) {
+  currentLead = allLeads.find(function(l){ return l.id === id; });
+  if (!currentLead) return;
+  var status = STATUSES.find(function(s){ return s.key === currentLead.status; }) || STATUSES[0];
+  document.getElementById('detailTitle').textContent = currentLead.name;
+
+  var statusOptions = STATUSES.map(function(s) {
+    var sel = s.key === currentLead.status;
+    return '<div class="status-option ' + (sel ? 'selected' : '') + '" ' +
+      'style="background:' + s.bg + ';color:' + s.color + '" ' +
+      'onclick="selectStatus(\'' + s.key + '\', this)">' + s.label + '</div>';
+  }).join('');
+
+  document.getElementById('detailBody').innerHTML =
+    '<div class="detail-section">' +
+      '<div class="detail-section-title">Контакты</div>' +
+      '<div class="detail-row"><span class="detail-row-label">Имя</span><span class="detail-row-value">' + currentLead.name + '</span></div>' +
+      '<div class="detail-row"><span class="detail-row-label">Телефон</span><span class="detail-row-value" style="color:#1B6CA8">' + currentLead.phone + '</span></div>' +
+      (currentLead.username ? '<div class="detail-row"><span class="detail-row-label">Username</span><span class="detail-row-value">@' + currentLead.username + '</span></div>' : '') +
+    '</div>' +
+    '<div class="detail-section">' +
+      '<div class="detail-section-title">Анкета</div>' +
+      '<div class="detail-row"><span class="detail-row-label">Регион</span><span class="detail-row-value">' + currentLead.region + '</span></div>' +
+      '<div class="detail-row"><span class="detail-row-label">Площадь</span><span class="detail-row-value">' + currentLead.area + '</span></div>' +
+      '<div class="detail-row"><span class="detail-row-label">Бюджет</span><span class="detail-row-value">' + currentLead.budget + '</span></div>' +
+      '<div class="detail-row"><span class="detail-row-label">Срочность</span><span class="detail-row-value">' + currentLead.urgency + '</span></div>' +
+    '</div>' +
+    '<div class="detail-section">' +
+      '<div class="detail-section-title">Статус</div>' +
+      '<div class="status-selector">' + statusOptions + '</div>' +
+    '</div>' +
+    '<div class="detail-section">' +
+      '<div class="detail-section-title">Действия</div>' +
+      '<div class="action-btns">' +
+        '<button class="action-btn btn-call" onclick="callLead()">📞 Позвонить ' + currentLead.phone + '</button>' +
+        '<button class="action-btn btn-msg" onclick="msgLead()">✉️ Написать в Telegram</button>' +
+        '<button class="action-btn btn-save" onclick="saveLead()">💾 Сохранить изменения</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('leadDetail').classList.add('open');
+  if (tg) tg.BackButton.show();
+}
+
+function closeDetail() {
+  document.getElementById('leadDetail').classList.remove('open');
+  if (tg) tg.BackButton.hide();
+}
+
+function selectStatus(key, el) {
+  document.querySelectorAll('.status-option').forEach(function(o){ o.classList.remove('selected'); });
+  el.classList.add('selected');
+  if (currentLead) currentLead.status = key;
+}
+
+function callLead() {
+  if (currentLead) window.location.href = 'tel:' + currentLead.phone.replace(/\s/g,'');
+}
+
+function msgLead() {
+  if (currentLead && currentLead.username) {
+    window.open('https://t.me/' + currentLead.username, '_blank');
+  } else {
+    showToast('Username не указан');
+  }
+}
+
+function saveLead() {
+  // Обновляем локально
+  var idx = allLeads.findIndex(function(l){ return l.id === currentLead.id; });
+  if (idx >= 0) allLeads[idx] = currentLead;
+  updateStats(allLeads);
+  closeDetail();
+  showToast('✅ Статус обновлён');
+}
+
+// ── КАЛЬКУЛЯТОР ──
+function calcPrice() {
+  var area = parseInt(document.getElementById('areaSlider').value);
+  document.getElementById('areaValue').textContent = area + ' м²';
+  var pricePerSqm = 100000; // 100 000 ₸ за м²
+  var price = area * pricePerSqm;
+  var brickPrice = price * 2;
+  document.getElementById('calcPrice').textContent = formatMln(price) + ' ₸';
+  document.getElementById('calcCompare').textContent = 'Из кирпича обошлось бы ~' + formatMln(brickPrice) + ' ₸';
+}
+
+function formatMln(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + ' млн';
+  return n.toLocaleString('ru');
+}
+
+// ── КЛИЕНТ ──
+function callManager() {
+  window.location.href = 'tel:+77082393572';
+}
+
+// ── НАВИГАЦИЯ ──
+function showAdminTab(tab, el) {
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+  // TODO: дополнительные вкладки
+  showToast('Раздел "' + tab + '" — скоро');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// BackButton Telegram
+if (tg) {
+  tg.BackButton.onClick(function() {
+    if (document.getElementById('leadDetail').classList.contains('open')) {
+      closeDetail();
+    }
+  });
+}
+</script>
+</body>
+</html>
