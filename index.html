@@ -2,6 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ISM</title>
 <style>
@@ -20,13 +23,14 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; }
+html { height: 100%; }
 body {
   font-family: 'Montserrat', sans-serif;
   background: var(--w);
   color: var(--k);
   overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ── ШАПКА ── */
@@ -431,6 +435,7 @@ body {
 // ═══════════════════════════════════════════════
 // КОНФИГ — меняй здесь
 // ═══════════════════════════════════════════════
+// v6.1 - cache bust
 const CFG = {
   admins: ['453800951'],
   gas: 'https://script.google.com/macros/s/AKfycbwnyFOOIqSroC2sNYsWQ8iZ24oZqueh0v1mz1rR1lH4RLXqOZXY5uIaFLvV-ocDVEyv/exec',
@@ -512,10 +517,27 @@ let curP=0, curV=0, tsX=0;
 (function(){
   if(tg){
     tg.ready();
-    tg.expand();
-    setTimeout(function(){tg.expand();}, 50);
-    setTimeout(function(){tg.expand();}, 300);
+    // Принудительный полный экран - все способы
+    function forceExpand(){
+      tg.expand();
+      if(tg.isExpanded === false) tg.expand();
+    }
+    forceExpand();
+    window.addEventListener('load', forceExpand);
+    document.addEventListener('DOMContentLoaded', forceExpand);
+    requestAnimationFrame(forceExpand);
+    setTimeout(forceExpand, 50);
+    setTimeout(forceExpand, 300);
+    setTimeout(forceExpand, 1000);
+    // Слушаем изменение размера
+    if(tg.onEvent) {
+      tg.onEvent('viewportChanged', function(e){
+        if(!e.isStateStable) return;
+        tg.expand();
+      });
+    }
     tg.setHeaderColor('#0d0d0d');
+    tg.setBackgroundColor('#0d0d0d');
   }
   if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){
     myUid = String(tg.initDataUnsafe.user.id);
@@ -952,6 +974,7 @@ function showToast(msg){
   t.textContent = msg; t.classList.add('on');
   setTimeout(function(){ t.classList.remove('on'); }, 2500);
 }
+
 </script>
 </body>
 </html>
