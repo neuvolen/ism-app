@@ -541,7 +541,7 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 </div>
 
 <!-- АДМИН -->
-<div id="aScr" class="scr on">
+<div id="aScr" class="scr">
   <div class="met">
     <div class="mc2"><div class="mn2" id="mh">0</div><div class="ml">Горячих</div></div>
     <div class="mc2"><div class="mn2" id="mw">0</div><div class="ml">Работа</div></div>
@@ -621,8 +621,9 @@ let allLeads=[], curF='all', curLead=null;
     document.getElementById('sw').style.display='none';
     setMode('client');
   } else {
-    // Админ — показываем переключатель
+    // Админ — показываем переключатель и админ экран
     document.getElementById('sw').style.display='block';
+    setMode('admin');
     loadLeads();
   }
   if(tg) tg.BackButton.onClick(function(){
@@ -1070,36 +1071,44 @@ function doCTA(k){
 
 // ═══ ЕДИНЫЙ ДЕЛЕГИРОВАННЫЙ ОБРАБОТЧИК ВСЕХ КНОПОК ═══
 document.addEventListener('click', function(e){
-  var btn = e.target.closest('button, [data-action], [data-cat], [data-mode]');
+  // closest поднимается от target вверх — ловит клик по тексту внутри кнопки
+  var btn = e.target.closest('[data-mode],[data-filt],[data-action],[data-cat],[data-lid]');
   if(!btn) return;
+
+  var mode   = btn.dataset.mode;
+  var filt   = btn.dataset.filt;
   var action = btn.dataset.action;
   var cat    = btn.dataset.cat;
-  var mode   = btn.dataset.mode;
+  var lid    = btn.dataset.lid;
 
-  if(mode){
-    // Переключатель Админ/Клиент
-    document.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('on', b.dataset.mode===mode); });
+  if(mode !== undefined){
+    document.querySelectorAll('[data-mode]').forEach(function(b){
+      b.classList.toggle('on', b.dataset.mode===mode);
+    });
     setMode(mode);
     return;
   }
-  var filt_val = btn.dataset.filt;
-  if(filt_val !== undefined){
-    document.querySelectorAll('[data-filt]').forEach(function(c){c.classList.toggle('on', c.dataset.filt===filt_val);});
-    curF=filt_val; renderLeads(); return;
+  if(filt !== undefined){
+    document.querySelectorAll('[data-filt]').forEach(function(c){
+      c.classList.toggle('on', c.dataset.filt===filt);
+    });
+    curF=filt; renderLeads(); return;
   }
-  if(action === 'faq'){ btn.classList.toggle('open'); return; }
+  if(action === 'switchcat'){ switchCat(cat); return; }
+  if(action === 'call'){ location.href='tel:+77082393572'; return; }
   if(action === 'closedet'){ closeDet(); return; }
+  if(action === 'faq'){ btn.classList.toggle('open'); return; }
   if(action === 'picks'){
-    var st = btn.dataset.status;
     document.querySelectorAll('[data-action="picks"]').forEach(function(o){o.classList.remove('on');});
     btn.classList.add('on');
-    if(curLead) curLead.status=st; return;
+    if(curLead) curLead.status = btn.dataset.status; return;
   }
-  var lid = btn.dataset.lid;
+  if(action === 'docall'){ doCall(); return; }
+  if(action === 'domsg'){  doMsg();  return; }
+  if(action === 'dosave'){ doSave(); return; }
+  if(action && action.indexOf('sendwarm') === 0){ sendWarm(parseInt(action.split('-')[1])); return; }
   if(lid){ openDet(lid); return; }
-  if(action === 'switchcat' && cat){ switchCat(cat); return; }
-  if(action === 'call'){ location.href='tel:+77082393572'; return; }
-  if(cat && !action){ doCTA(cat); return; }
+  if(cat){ doCTA(cat); return; }
 });
 
 // ══ ADMIN ══
