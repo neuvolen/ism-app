@@ -55,12 +55,20 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 ═══════════════════════════════════════ */
 .cat-nav {
   background:var(--k);
-  padding:0 16px 14px;
+  padding:0 0 14px;
   overflow-x:auto; scrollbar-width:none;
   border-bottom:1px solid #1c1c1c;
+  position:relative;
+}
+/* Fade указывает что есть ещё вкладки */
+.cat-nav::after {
+  content:'';
+  position:absolute; top:0; right:0; bottom:14px; width:40px;
+  background:linear-gradient(to right, transparent, var(--k));
+  pointer-events:none;
 }
 .cat-nav::-webkit-scrollbar { display:none; }
-.cat-nav-inner { display:flex; gap:6px; padding-top:10px; min-width:max-content; }
+.cat-nav-inner { display:flex; gap:6px; padding:10px 16px 0; min-width:max-content; }
 .ctab {
   padding:6px 13px; border-radius:20px; font-size:11px; font-weight:700;
   border:1.5px solid rgba(255,255,255,.12); cursor:pointer; white-space:nowrap;
@@ -343,12 +351,14 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 /* ═══════════════════════════════════════
    OBJECTS (property) — magazine cards
 ═══════════════════════════════════════ */
-.obj-magazine { display:flex; flex-direction:column; gap:1px; }
+.obj-magazine { display:flex; flex-direction:column; gap:0; border:1px solid var(--b); border-radius:12px; overflow:hidden; }
 .obj-item {
-  background:var(--s); padding:16px;
+  background:var(--s); padding:14px 16px;
   display:flex; justify-content:space-between; align-items:flex-start;
   border-bottom:1px solid var(--b); gap:12px;
 }
+.obj-item:first-child { border-top-left-radius:12px; border-top-right-radius:12px; }
+.obj-item:last-child { border-bottom:none; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }
 .obj-item:last-child { border-bottom:none; }
 .obj-left { flex:1; }
 .obj-name { font-weight:700; font-size:15px; margin-bottom:4px; line-height:1.2; }
@@ -495,7 +505,7 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 .sopt { padding:9px 6px; border-radius:9px; font-size:11px; font-weight:700; border:2px solid transparent; cursor:pointer; text-align:center; transition:all .2s; font-family:'Space Grotesk',sans-serif; }
 .sopt.on { border-color:var(--k)!important; }
 .acts { display:flex; flex-direction:column; gap:7px; }
-.abtn { padding:13px; border-radius:11px; font-size:14px; font-weight:800; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:transform .15s; font-family:'Space Grotesk',sans-serif; }
+.abtn { padding:13px; border-radius:11px; font-size:13px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:transform .15s; font-family:'Space Grotesk',sans-serif; letter-spacing:-.1px; }
 .abtn:active { transform:scale(.97); }
 .a1{background:#16a34a;color:#fff;}.a2{background:var(--acc);color:#fff;}.a3{background:var(--k);color:#fff;}
 .warm-item { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--b); align-items:flex-start; }
@@ -518,8 +528,8 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
   <div class="logo">AD<em>O</em>M</div>
   <div id="sw" style="display:none">
     <div class="sw">
-      <button class="swb on" onclick="setMode('admin')">Админ</button>
-      <button class="swb" onclick="setMode('client')">Клиент</button>
+      <button class="swb on" data-mode="admin">Админ</button>
+      <button class="swb" data-mode="client">Клиент</button>
     </div>
   </div>
 </div>
@@ -538,21 +548,21 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
     <div class="mc2"><div class="mn2" id="mm">0</div><div class="ml">Замеры</div></div>
     <div class="mc2"><div class="mn2" id="md">0</div><div class="ml">Готово</div></div>
   </div>
-  <div class="chips">
-    <div class="chip on" onclick="filt('all',this)">Все</div>
-    <div class="chip" onclick="filt('hot',this)">🔥 Горячие</div>
-    <div class="chip" onclick="filt('house',this)">🏠 Дом</div>
-    <div class="chip" onclick="filt('commercial',this)">🏗 Коммерция</div>
-    <div class="chip" onclick="filt('block',this)">📦 Блок</div>
-    <div class="chip" onclick="filt('bunker',this)">🔒 Бункер</div>
-    <div class="chip" onclick="filt('property',this)">🏢 Объекты</div>
+  <div class="chips" id="adminChips">
+    <div class="chip on" data-filt="all">Все</div>
+    <div class="chip" data-filt="hot">🔥 Горячие</div>
+    <div class="chip" data-filt="house">🏠 Дом</div>
+    <div class="chip" data-filt="commercial">🏗 Коммерция</div>
+    <div class="chip" data-filt="block">📦 Блок</div>
+    <div class="chip" data-filt="bunker">🔒 Бункер</div>
+    <div class="chip" data-filt="property">🏢 Объекты</div>
   </div>
   <div class="leads" id="leads"><div class="empty"><div class="ei">⏳</div><div class="et">Загрузка...</div></div></div>
 </div>
 
 <!-- ДЕТАЛИ -->
 <div class="det" id="det">
-  <div class="dhdr"><button class="back" onclick="closeDet()">←</button><div class="dtl" id="dttl">Лид</div></div>
+  <div class="dhdr"><button class="back" data-action="closedet">←</button><div class="dtl" id="dttl">Лид</div></div>
   <div class="dbody" id="dbdy"></div>
 </div>
 
@@ -641,7 +651,7 @@ function buildClientUI(){
   // Nav
   document.getElementById('catNav').innerHTML = CAT_KEYS.map(function(k){
     var info = getCatInfo(k);
-    return '<button class="ctab'+(k===curCat?' on':'')+'" data-cat="'+k+'" onclick="switchCat(\''+k+'\')">'+ info.emoji+' '+info.short+'</button>';
+    return '<button class="ctab'+(k===curCat?' on':'')+'" data-cat="'+k+'" data-action="switchcat">'+ info.emoji+' '+info.short+'</button>';
   }).join('');
   // Screens
   document.getElementById('catScreens').innerHTML = CAT_KEYS.map(function(k){ return buildScreen(k); }).join('');
@@ -664,18 +674,18 @@ function switchCat(k){
 // ══ CATEGORY INFO ══
 function getCatInfo(k){
   var m={
-    house:      {emoji:'🏠',short:'Дом',       eyebrow:'Монолитное строительство', headline:'ДОМА КОТОРЫЕ СТОЯТ ПОСЛЕ ЗЕМЛЕТРЯСЕНИЯ', sub:'Технология ISM/СКИП — сейсмостойкость 9+ баллов при стоимости в 2 раза ниже кирпича.',cta:'Записаться на консультацию'},
-    commercial: {emoji:'🏗',short:'Коммерция',  eyebrow:'Коммерческое строительство',headline:'ЛЮБОЙ МАСШТАБ. ЛЮБАЯ ГЕОМЕТРИЯ.',         sub:'Магазины, склады, офисы, производства. Большие пролёты без колонн. Быстрее на 30%.',cta:'Обсудить проект'},
-    glamping:   {emoji:'⛺',short:'Глэмпинг',   eyebrow:'Нестандартный дизайн',      headline:'ОТ ЮРТЫ ДО КУПОЛА — МЫ СТРОИМ ВСЁ',     sub:'Любые формы и геометрия без существенного удорожания. Глэмпинг под ключ с ландшафтом.',cta:'Обсудить концепцию'},
-    mansard:    {emoji:'🏠',short:'Мансарда',   eyebrow:'Мансарды с гарантией',      headline:'ТЕПЛО ЗИМОЙ. НЕ ЖАРКО ЛЕТОМ.',          sub:'Технология сухого пеноизола. Сотни реализованных мансард в Алматы. Делаем правильно.',cta:'Записаться на замер'},
-    scip:       {emoji:'🧱',short:'СКИП',       eyebrow:'SCIP Technology · USA',     headline:'IMPAC SYSTEM — АМЕРИКАНСКАЯ ТЕХНОЛОГИЯ',sub:'Structural Concrete Insulated Panels. Сертифицированная франшиза завода IMPAC, США.',cta:'Получить расчёт'},
-    block:      {emoji:'📦',short:'Блок',       eyebrow:'Собственное производство',  headline:'МОДУЛЬНЫЕ ЖБ КОНСТРУКЦИИ',              sub:'3 размера. Дача, офис, бункер, жильё. Доставка до 1000 км. Готовый домик в наличии.',cta:'Узнать стоимость'},
-    bunker:     {emoji:'🔒',short:'Бункер',     eyebrow:'Защитные убежища',          headline:'ЗАЩИТА О КОТОРОЙ НИКТО НЕ УЗНАЕТ',      sub:'Железобетон. Полная автономия. Все инженерные системы. Конфиденциально.',cta:'Обсудить проект'},
-    property:   {emoji:'🏢',short:'Объекты',    eyebrow:'Недвижимость от ADOM',      headline:'ГОТОВО К ПОКУПКЕ ПРЯМО СЕЙЧАС',         sub:'Таунхаус, квартира, переносной домик. Нал и рассрочка. Ликвидные объекты.',cta:'Узнать подробности'},
-    electrical: {emoji:'⚡',short:'Электрика',  eyebrow:'Инженерные работы',         headline:'ЭЛЕКТРИКА И САНТЕХНИКА ПОД КЛЮЧ',       sub:'Полный комплекс инженерных работ. Через проверенных субподрядчиков. Гарантия.',cta:'Вызвать специалиста'},
-    partnership:{emoji:'🤝',short:'Партнёры',   eyebrow:'Сотрудничество',            headline:'ДАВАЙТЕ СТРОИТЬ ВМЕСТЕ',                sub:'Архитекторы, застройщики, инвесторы. Открыты к долгосрочному партнёрству.',cta:'Предложить сотрудничество'},
-    vacancy:    {emoji:'💼',short:'Вакансии',   eyebrow:'Команда ADOM',              headline:'ТОЛЬКО ПРОФЕССИОНАЛЫ СВОЕГО ДЕЛА',      sub:'Строители, электрики, сантехники, офис-менеджеры. Любители не подходят.',cta:'Откликнуться'},
-    other:      {emoji:'❓',short:'Вопрос',     eyebrow:'Свободный вопрос',          headline:'ЗАДАЙТЕ ЛЮБОЙ ВОПРОС',                  sub:'Ответим в ближайшее время. Консультация бесплатна.',cta:'Задать вопрос'},
+    house:      {emoji:'🏠',short:'Дом',       eyebrow:'Монолитное строительство', headline:'Дома, которые стоят после землетрясения', sub:'Технология ISM/СКИП — сейсмостойкость 9+ баллов при стоимости в 2 раза ниже кирпича.',cta:'Записаться на консультацию'},
+    commercial: {emoji:'🏗',short:'Коммерция',  eyebrow:'Коммерческое строительство',headline:'Любой масштаб. Любая геометрия',         sub:'Магазины, склады, офисы, производства. Большие пролёты без колонн. Быстрее на 30%.',cta:'Обсудить проект'},
+    glamping:   {emoji:'⛺',short:'Глэмпинг',   eyebrow:'Нестандартный дизайн',      headline:'От юрты до купола — строим всё',     sub:'Любые формы и геометрия без существенного удорожания. Глэмпинг под ключ с ландшафтом.',cta:'Обсудить концепцию'},
+    mansard:    {emoji:'🏠',short:'Мансарда',   eyebrow:'Мансарды с гарантией',      headline:'Тепло зимой. Не жарко летом',          sub:'Технология сухого пеноизола. Сотни реализованных мансард в Алматы. Делаем правильно.',cta:'Записаться на замер'},
+    scip:       {emoji:'🧱',short:'СКИП',       eyebrow:'SCIP Technology · USA',     headline:'IMPAC System — американская технология',sub:'Structural Concrete Insulated Panels. Сертифицированная франшиза завода IMPAC, США.',cta:'Получить расчёт'},
+    block:      {emoji:'📦',short:'Блок',       eyebrow:'Собственное производство',  headline:'Модульные ЖБ конструкции',              sub:'3 размера. Дача, офис, бункер, жильё. Доставка до 1000 км. Готовый домик в наличии.',cta:'Узнать стоимость'},
+    bunker:     {emoji:'🔒',short:'Бункер',     eyebrow:'Защитные убежища',          headline:'Защита, о которой никто не узнает',      sub:'Железобетон. Полная автономия. Все инженерные системы. Конфиденциально.',cta:'Обсудить проект'},
+    property:   {emoji:'🏢',short:'Объекты',    eyebrow:'Недвижимость от ADOM',      headline:'Готово к покупке прямо сейчас',         sub:'Таунхаус, квартира, переносной домик. Нал и рассрочка. Ликвидные объекты.',cta:'Узнать подробности'},
+    electrical: {emoji:'⚡',short:'Электрика',  eyebrow:'Инженерные работы',         headline:'Электрика и сантехника под ключ',       sub:'Полный комплекс инженерных работ. Через проверенных субподрядчиков. Гарантия.',cta:'Вызвать специалиста'},
+    partnership:{emoji:'🤝',short:'Партнёры',   eyebrow:'Сотрудничество',            headline:'Давайте строить вместе',                sub:'Архитекторы, застройщики, инвесторы. Открыты к долгосрочному партнёрству.',cta:'Предложить сотрудничество'},
+    vacancy:    {emoji:'💼',short:'Вакансии',   eyebrow:'Команда ADOM',              headline:'Только профессионалы своего дела',      sub:'Строители, электрики, сантехники, офис-менеджеры. Любители не подходят.',cta:'Откликнуться'},
+    other:      {emoji:'❓',short:'Вопрос',     eyebrow:'Свободный вопрос',          headline:'Задайте любой вопрос',                  sub:'Ответим в ближайшее время. Консультация бесплатна.',cta:'Задать вопрос'},
   };
   return m[k]||m.other;
 }
@@ -701,7 +711,7 @@ function buildScreen(k){
     '<div class="mgr-block" style="border-color:'+acc+'20">'+
       '<div class="mav" style="background:'+acc+'">👷</div>'+
       '<div style="flex:1"><div class="mn">Директор ADOM</div><div class="mr">+7 708 239 35 72</div></div>'+
-      '<button class="mc" onclick="location.href=\'tel:+77082393572\'">📞</button>'+
+      '<button class="mc" data-action="call">📞</button>'+
     '</div></div>';
   var ctaF  = '<div class="cta-footer">'+
     '<button class="cta-btn" data-cat="'+k+'" style="background:'+acc+';border-radius:10px">'+
@@ -960,8 +970,10 @@ function buildBunkerBody(acc){
 
 // ── PROPERTY ──
 function buildPropertyBody(acc){
-  return '<div class="section"><div class="sect-label">Актуальные объекты</div>'+
-    '<div class="obj-magazine" id="objList"><div class="empty"><div class="ei">⏳</div><div class="et">Загружаем...</div></div></div></div>';
+  return '<div class="section">'+
+    '<div class="sect-label">Актуальные объекты</div>'+
+    '<div class="obj-magazine" id="objList"><div class="empty"><div class="ei">⏳</div><div class="et">Загружаем...</div></div></div>'+
+  '</div>';
 }
 
 // ── ELECTRICAL ──
@@ -1056,13 +1068,38 @@ function doCTA(k){
   else location.href='tel:+77082393572';
 }
 
-// Делегированный обработчик для всех CTA кнопок
+// ═══ ЕДИНЫЙ ДЕЛЕГИРОВАННЫЙ ОБРАБОТЧИК ВСЕХ КНОПОК ═══
 document.addEventListener('click', function(e){
-  var btn = e.target.closest('[data-cat]');
-  if(btn){
-    var cat = btn.dataset.cat;
-    if(cat) doCTA(cat);
+  var btn = e.target.closest('button, [data-action], [data-cat], [data-mode]');
+  if(!btn) return;
+  var action = btn.dataset.action;
+  var cat    = btn.dataset.cat;
+  var mode   = btn.dataset.mode;
+
+  if(mode){
+    // Переключатель Админ/Клиент
+    document.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('on', b.dataset.mode===mode); });
+    setMode(mode);
+    return;
   }
+  var filt_val = btn.dataset.filt;
+  if(filt_val !== undefined){
+    document.querySelectorAll('[data-filt]').forEach(function(c){c.classList.toggle('on', c.dataset.filt===filt_val);});
+    curF=filt_val; renderLeads(); return;
+  }
+  if(action === 'faq'){ btn.classList.toggle('open'); return; }
+  if(action === 'closedet'){ closeDet(); return; }
+  if(action === 'picks'){
+    var st = btn.dataset.status;
+    document.querySelectorAll('[data-action="picks"]').forEach(function(o){o.classList.remove('on');});
+    btn.classList.add('on');
+    if(curLead) curLead.status=st; return;
+  }
+  var lid = btn.dataset.lid;
+  if(lid){ openDet(lid); return; }
+  if(action === 'switchcat' && cat){ switchCat(cat); return; }
+  if(action === 'call'){ location.href='tel:+77082393572'; return; }
+  if(cat && !action){ doCTA(cat); return; }
 });
 
 // ══ ADMIN ══
@@ -1099,7 +1136,7 @@ function renderLeads(){
   if(!f.length){el.innerHTML='<div class="empty"><div class="ei">📭</div><div class="et">Нет лидов</div></div>';return;}
   el.innerHTML=f.map(function(l){
     var s=STATUSES.find(function(s){return s.key===l.status;})||STATUSES[0];
-    return '<div class="lcard" onclick="openDet(\''+l.id+'\')">'+
+    return '<div class="lcard" data-lid="'+l.id+'">'+
       (l.hot?'<div class="ldot"></div>':'')+
       '<div class="lhead"><div><div class="lname">'+l.name+'</div><div class="lmeta">'+l.date+(l.time?' · '+l.time:'')+'</div></div>'+
         '<span class="badge '+s.cls+'">'+s.label+'</span></div>'+
@@ -1113,13 +1150,13 @@ function renderLeads(){
   }).join('');
 }
 
-function filt(f,el){curF=f;document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');renderLeads();}
+function filt(f,el){curF=f;renderLeads();} // legacy
 
 function openDet(id){
   curLead=allLeads.find(function(l){return l.id===id;});
   if(!curLead) return;
   document.getElementById('dttl').textContent=curLead.name;
-  var sOpts=STATUSES.map(function(st){return '<div class="sopt'+(st.key===curLead.status?' on':'')+'" style="background:'+st.bg+';color:'+st.color+'" onclick="pickS(\''+st.key+'\',this)">'+st.label+'</div>';}).join('');
+  var sOpts=STATUSES.map(function(st){return '<div class="sopt'+(st.key===curLead.status?' on':'')+'" style="background:'+st.bg+';color:'+st.color+'" data-action="picks" data-status="'+st.key+'">'+st.label+'</div>';}).join('');
   // Парсим details — может быть строка JSON или объект
   var detObj = curLead.details;
   if(typeof detObj === 'string'){
