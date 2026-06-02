@@ -39,7 +39,7 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
   position:sticky; top:0; z-index:200;
   border-bottom:1px solid #1c1c1c;
 }
-.logo { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; color:#fff; }
+.logo { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:800; letter-spacing:1px; color:#fff; }
 .logo em { color:var(--acc); font-style:normal; }
 .sw { display:flex; background:#141414; border-radius:8px; padding:3px; gap:2px; }
 .swb { padding:5px 13px; border-radius:6px; font-size:11px; font-weight:700; border:none; cursor:pointer; background:transparent; color:#555; font-family:'Space Grotesk',sans-serif; transition:all .2s; letter-spacing:.3px; }
@@ -85,9 +85,9 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 
 /* ────── HERO базовый ────── */
 .cat-hero {
-  position:relative; overflow:hidden; min-height:240px;
+  position:relative; overflow:hidden; min-height:220px;
   display:flex; flex-direction:column; justify-content:flex-end;
-  padding:16px;
+  padding:16px 16px 18px;
   background:var(--hero-bg);
 }
 .cat-hero-bg {
@@ -101,26 +101,26 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 }
 .cat-hero-content { position:relative; z-index:1; }
 .cat-eyebrow {
-  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px;
-  text-transform:uppercase; color:var(--acc); margin-bottom:10px;
-  display:inline-flex; align-items:center; gap:6px;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--acc); margin-bottom:8px;
+  display:inline-flex; align-items:center; gap:8px;
 }
-.cat-eyebrow::before { content:''; width:20px; height:1px; background:var(--acc); display:inline-block; }
+.cat-eyebrow::before { content:''; width:16px; height:1px; background:currentColor; display:inline-block; flex-shrink:0; }
 .cat-headline {
-  font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:.5px;
-  color:#fff; line-height:1; margin-bottom:10px;
-  word-break:break-word; hyphens:auto;
+  font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800;
+  color:#fff; line-height:1.15; margin-bottom:10px;
+  letter-spacing:-.3px; word-break:keep-all;
 }
-.cat-sub { font-size:13px; color:rgba(255,255,255,.55); line-height:1.6; max-width:320px; }
+.cat-sub { font-size:12px; color:rgba(255,255,255,.5); line-height:1.65; max-width:340px; margin-top:4px; }
 
 /* ────── HERO HOUSE — бетон + синий ────── */
-#cs_house .cat-hero { min-height:320px; }
+#cs_house .cat-hero { min-height:230px; }
 #cs_house .cat-hero-bg {
   background: repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 40px),
               repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0px, rgba(255,255,255,.03) 1px, transparent 1px, transparent 40px);
   opacity:1;
 }
-#cs_house .cat-headline { font-size:38px; }
+#cs_house .cat-headline { font-size:26px; }
 
 /* ────── HERO COMMERCIAL — брутализм ────── */
 #cs_commercial .cat-hero { background:#0a0a0a; }
@@ -203,16 +203,16 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 }
 .stats-bar::-webkit-scrollbar { display:none; }
 .stat-item {
-  flex:1; min-width:80px; padding:14px 10px; text-align:center;
+  flex:1; min-width:70px; padding:10px 8px; text-align:center;
   border-right:1px solid #1c1c1c;
   transition:background .2s;
 }
 .stat-item:last-child { border-right:none; }
 .stat-num {
-  font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--acc);
+  font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:800; color:var(--acc);
   line-height:1; display:block;
 }
-.stat-label { font-size:9px; color:#555; margin-top:3px; text-transform:uppercase; letter-spacing:.8px; line-height:1.3; }
+.stat-label { font-size:9px; color:#555; margin-top:2px; letter-spacing:.5px; line-height:1.3; }
 
 /* ═══════════════════════════════════════
    CTA PRIMARY
@@ -612,7 +612,7 @@ let allLeads=[], curF='all', curLead=null;
     setMode('client');
   } else {
     // Админ — показываем переключатель
-    document.getElementById('sw').style.display='flex';
+    document.getElementById('sw').style.display='block';
     loadLeads();
   }
   if(tg) tg.BackButton.onClick(function(){
@@ -704,7 +704,7 @@ function buildScreen(k){
       '<button class="mc" onclick="location.href=\'tel:+77082393572\'">📞</button>'+
     '</div></div>';
   var ctaF  = '<div class="cta-footer">'+
-    '<button class="cta-btn" onclick="doCTA(\''+k+'\',\''+acc+'\')" style="background:'+acc+';border-radius:10px">'+
+    '<button class="cta-btn" data-cat="'+k+'" style="background:'+acc+';border-radius:10px">'+
       info.cta+' →'+
     '</button>'+
     '<div class="cta-footer-note">ADOM · Алматы и весь Казахстан · 50+ проектов</div>'+
@@ -739,7 +739,7 @@ function buildStats(k, acc){
 
 function buildCTA(k, label, acc){
   return '<div class="cta-primary" style="background:#080808">'+
-    '<button class="cta-primary-btn" onclick="doCTA(\''+k+'\',\''+acc+'\')" style="background:'+acc+'">'+
+    '<button class="cta-primary-btn" data-cat="'+k+'" style="background:'+acc+'">'+
       label+' →'+
     '</button>'+
     '<div class="cta-sub-text">менеджер свяжется в течение 1 часа</div>'+
@@ -1051,10 +1051,19 @@ function loadObjects(){
 function toggleFaq(el){ el.classList.toggle('open'); }
 
 // ══ CTA ══
-function doCTA(k, acc){
+function doCTA(k){
   if(tg&&tg.sendData) tg.sendData(JSON.stringify({action:'meeting',category:k}));
   else location.href='tel:+77082393572';
 }
+
+// Делегированный обработчик для всех CTA кнопок
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('[data-cat]');
+  if(btn){
+    var cat = btn.dataset.cat;
+    if(cat) doCTA(cat);
+  }
+});
 
 // ══ ADMIN ══
 function loadLeads(){
