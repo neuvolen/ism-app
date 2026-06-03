@@ -608,65 +608,55 @@ let tg = window.Telegram && window.Telegram.WebApp;
 let myUid=null, isAdmin=false, curCat='house';
 let allLeads=[], curF='all', curLead=null;
 
-function checkAdmin(){
-  if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){
-    myUid=String(tg.initDataUnsafe.user.id);
-    isAdmin=ADMINS.includes(myUid);
-    return true;
-  }
-  if(tg&&tg.initData&&tg.initData.length>10){
-    try{
-      var p=tg.initData.split('&');
-      for(var i=0;i<p.length;i++){
-        if(p[i].indexOf('user=')===0){
-          var ud=JSON.parse(decodeURIComponent(p[i].slice(5)));
-          myUid=String(ud.id); isAdmin=ADMINS.includes(myUid);
-          return true;
-        }
-      }
-    }catch(e){}
-  }
-  return false;
-}
-
-(function init(){
-  if(tg){
-    tg.ready();
-    tg.expand();
-    setTimeout(function(){tg.expand();},300);
-    tg.setHeaderColor('#080808');
-    tg.setBackgroundColor('#080808');
-  }
-
-  var urlP=new URLSearchParams(window.location.search);
-  var catP=urlP.get('cat');
-  var uidP=urlP.get('uid');  // uid передаёт бот в URL
-  if(catP&&CAT_KEYS.includes(catP)) curCat=catP;
-
-  // Проверяем админа: 1) из URL ?uid= (бот передаёт), 2) из tg.initData
-  if(uidP&&ADMINS.includes(uidP)){ myUid=uidP; isAdmin=true; }
-  else { checkAdmin(); }
-
-  buildClientUI();
-  setMode('client');
-
+function applyAdminUI(){
   if(isAdmin){
     document.getElementById('sw').style.display='block';
     loadLeads();
   }
+}
 
-  // На случай если tg.initData пришёл позже
-  setTimeout(function(){
-    if(!isAdmin){ checkAdmin(); }
-    if(isAdmin && document.getElementById('sw').style.display!=='block'){
-      document.getElementById('sw').style.display='block';
-      loadLeads();
-    }
-  }, 800);
+(function init(){
+  // Читаем URL параметры
+  var urlP = new URLSearchParams(window.location.search);
+  var catP = urlP.get('cat');
+  var uidP = urlP.get('uid'); // бот передаёт uid в URL
+  if(catP && CAT_KEYS.includes(catP)) curCat = catP;
 
-  if(tg) tg.BackButton.onClick(function(){
-    if(document.getElementById('det').classList.contains('on')) closeDet();
-  });
+  // Проверка через URL (самый надёжный способ — бот знает кто открывает)
+  if(uidP && ADMINS.includes(uidP)){
+    myUid = uidP;
+    isAdmin = true;
+  }
+
+  buildClientUI();
+  setMode('client');
+
+  if(tg){
+    // Как в BS: вся логика внутри tg.ready callback
+    tg.ready(function(){
+      tg.expand();
+      tg.setHeaderColor('#080808');
+      tg.setBackgroundColor('#080808');
+
+      // Проверяем из tg.initDataUnsafe если uid не пришёл из URL
+      if(!isAdmin){
+        var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+        if(user){
+          myUid = String(user.id);
+          isAdmin = ADMINS.includes(myUid);
+        }
+      }
+      applyAdminUI();
+      setTimeout(function(){ tg.expand(); }, 300);
+    });
+
+    tg.BackButton.onClick(function(){
+      if(document.getElementById('det').classList.contains('on')) closeDet();
+    });
+  }
+
+  // Если уже определили isAdmin через URL — применяем сразу
+  if(isAdmin) applyAdminUI();
 })();
 
 function setMode(m){
