@@ -608,35 +608,59 @@ let tg = window.Telegram && window.Telegram.WebApp;
 let myUid=null, isAdmin=false, curCat='house';
 let allLeads=[], curF='all', curLead=null;
 
-(function init(){
-  if(tg){ tg.ready(); tg.expand(); setTimeout(function(){tg.expand();},300); tg.setHeaderColor('#080808'); tg.setBackgroundColor('#080808'); }
-
-  // Определяем uid и права
+function checkAdmin(){
   if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){
-    myUid=String(tg.initDataUnsafe.user.id); isAdmin=ADMINS.includes(myUid);
-  } else if(tg&&tg.initData&&tg.initData.length>0){
-    // initData есть но user не распарсился — пробуем вручную
+    myUid=String(tg.initDataUnsafe.user.id);
+    isAdmin=ADMINS.includes(myUid);
+    return true;
+  }
+  if(tg&&tg.initData&&tg.initData.length>10){
     try{
-      var ud=JSON.parse(decodeURIComponent(tg.initData.split('user=')[1].split('&')[0]));
-      myUid=String(ud.id); isAdmin=ADMINS.includes(myUid);
+      var p=tg.initData.split('&');
+      for(var i=0;i<p.length;i++){
+        if(p[i].indexOf('user=')===0){
+          var ud=JSON.parse(decodeURIComponent(p[i].slice(5)));
+          myUid=String(ud.id); isAdmin=ADMINS.includes(myUid);
+          return true;
+        }
+      }
     }catch(e){}
   }
-  // Если всё ещё не определили — fallback для разработки
-  if(!myUid){ isAdmin = window.location.search.includes('dev=1'); }
+  return false;
+}
+
+(function init(){
+  if(tg){
+    tg.ready();
+    tg.expand();
+    setTimeout(function(){tg.expand();},300);
+    tg.setHeaderColor('#080808');
+    tg.setBackgroundColor('#080808');
+  }
 
   var urlP=new URLSearchParams(window.location.search);
   var catP=urlP.get('cat');
   if(catP&&CAT_KEYS.includes(catP)) curCat=catP;
 
   buildClientUI();
-  setMode('client'); // По умолчанию — клиентский режим
+  setMode('client');
 
-  if(isAdmin){
-    document.getElementById('sw').style.display='block';
-    loadLeads();
-  } else {
-    document.getElementById('sw').style.display='none';
+  // Пробуем определить админа — сначала сразу, потом с задержкой
+  function applyAdmin(){
+    if(isAdmin){
+      document.getElementById('sw').style.display='block';
+      loadLeads();
+    }
   }
+
+  checkAdmin();
+  applyAdmin();
+
+  // Telegram иногда передаёт initData с задержкой
+  setTimeout(function(){
+    checkAdmin();
+    applyAdmin();
+  }, 500);
 
   if(tg) tg.BackButton.onClick(function(){
     if(document.getElementById('det').classList.contains('on')) closeDet();
@@ -1077,8 +1101,11 @@ function toggleFaq(el){ el.classList.toggle('open'); }
 
 // ══ CTA ══
 function doCTA(k){
-  if(tg&&tg.sendData) tg.sendData(JSON.stringify({action:'meeting',category:k}));
-  else location.href='tel:+77082393572';
+  // tg.sendData работает только в KeyboardButton, не в inline web_app
+  // Открываем Telegram бот для записи
+  var botUrl = 'https://t.me/ismapp_bot?start=meet_'+k;
+  if(tg){ tg.openTelegramLink(botUrl); }
+  else { window.open(botUrl, '_blank'); }
 }
 
 // ═══ ЕДИНЫЙ ДЕЛЕГИРОВАННЫЙ ОБРАБОТЧИК ВСЕХ КНОПОК ═══
