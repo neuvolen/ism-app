@@ -640,27 +640,29 @@ function checkAdmin(){
 
   var urlP=new URLSearchParams(window.location.search);
   var catP=urlP.get('cat');
+  var uidP=urlP.get('uid');  // uid передаёт бот в URL
   if(catP&&CAT_KEYS.includes(catP)) curCat=catP;
+
+  // Проверяем админа: 1) из URL ?uid= (бот передаёт), 2) из tg.initData
+  if(uidP&&ADMINS.includes(uidP)){ myUid=uidP; isAdmin=true; }
+  else { checkAdmin(); }
 
   buildClientUI();
   setMode('client');
 
-  // Пробуем определить админа — сначала сразу, потом с задержкой
-  function applyAdmin(){
-    if(isAdmin){
+  if(isAdmin){
+    document.getElementById('sw').style.display='block';
+    loadLeads();
+  }
+
+  // На случай если tg.initData пришёл позже
+  setTimeout(function(){
+    if(!isAdmin){ checkAdmin(); }
+    if(isAdmin && document.getElementById('sw').style.display!=='block'){
       document.getElementById('sw').style.display='block';
       loadLeads();
     }
-  }
-
-  checkAdmin();
-  applyAdmin();
-
-  // Telegram иногда передаёт initData с задержкой
-  setTimeout(function(){
-    checkAdmin();
-    applyAdmin();
-  }, 500);
+  }, 800);
 
   if(tg) tg.BackButton.onClick(function(){
     if(document.getElementById('det').classList.contains('on')) closeDet();
