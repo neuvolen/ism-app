@@ -608,55 +608,46 @@ let tg = window.Telegram && window.Telegram.WebApp;
 let myUid=null, isAdmin=false, curCat='house';
 let allLeads=[], curF='all', curLead=null;
 
-function applyAdminUI(){
-  if(isAdmin){
-    document.getElementById('sw').style.display='block';
-    loadLeads();
-  }
-}
-
 (function init(){
-  // Читаем URL параметры
   var urlP = new URLSearchParams(window.location.search);
   var catP = urlP.get('cat');
-  var uidP = urlP.get('uid'); // бот передаёт uid в URL
+  var uidP = urlP.get('uid');
   if(catP && CAT_KEYS.includes(catP)) curCat = catP;
 
-  // Проверка через URL (самый надёжный способ — бот знает кто открывает)
+  // Проверяем uid из URL (бот передаёт) ИЛИ из tg
   if(uidP && ADMINS.includes(uidP)){
-    myUid = uidP;
-    isAdmin = true;
+    myUid = uidP; isAdmin = true;
+  } else if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user){
+    myUid = String(tg.initDataUnsafe.user.id);
+    isAdmin = ADMINS.includes(myUid);
   }
 
   buildClientUI();
   setMode('client');
 
+  // Показываем переключатель всегда — только админ видит данные
+  // Клиент нажмёт Админ но CRM будет пустым
+  document.getElementById('sw').style.display = 'block';
+
+  if(isAdmin){ loadLeads(); }
+
   if(tg){
-    // Как в BS: вся логика внутри tg.ready callback
     tg.ready(function(){
       tg.expand();
       tg.setHeaderColor('#080808');
       tg.setBackgroundColor('#080808');
-
-      // Проверяем из tg.initDataUnsafe если uid не пришёл из URL
-      if(!isAdmin){
-        var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-        if(user){
-          myUid = String(user.id);
-          isAdmin = ADMINS.includes(myUid);
-        }
+      // Повторная проверка после tg.ready
+      if(!isAdmin && tg.initDataUnsafe && tg.initDataUnsafe.user){
+        myUid = String(tg.initDataUnsafe.user.id);
+        isAdmin = ADMINS.includes(myUid);
+        if(isAdmin) loadLeads();
       }
-      applyAdminUI();
       setTimeout(function(){ tg.expand(); }, 300);
     });
-
     tg.BackButton.onClick(function(){
       if(document.getElementById('det').classList.contains('on')) closeDet();
     });
   }
-
-  // Если уже определили isAdmin через URL — применяем сразу
-  if(isAdmin) applyAdminUI();
 })();
 
 function setMode(m){
