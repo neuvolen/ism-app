@@ -610,26 +610,34 @@ let allLeads=[], curF='all', curLead=null;
 
 (function init(){
   if(tg){ tg.ready(); tg.expand(); setTimeout(function(){tg.expand();},300); tg.setHeaderColor('#080808'); tg.setBackgroundColor('#080808'); }
+
+  // Определяем uid и права
   if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){
     myUid=String(tg.initDataUnsafe.user.id); isAdmin=ADMINS.includes(myUid);
-  } else {
-    // Вне Telegram — показываем переключатель для разработки
-    // В продакшне Telegram всегда передаёт данные
-    isAdmin = window.location.search.includes('dev=1');
+  } else if(tg&&tg.initData&&tg.initData.length>0){
+    // initData есть но user не распарсился — пробуем вручную
+    try{
+      var ud=JSON.parse(decodeURIComponent(tg.initData.split('user=')[1].split('&')[0]));
+      myUid=String(ud.id); isAdmin=ADMINS.includes(myUid);
+    }catch(e){}
   }
+  // Если всё ещё не определили — fallback для разработки
+  if(!myUid){ isAdmin = window.location.search.includes('dev=1'); }
+
   var urlP=new URLSearchParams(window.location.search);
   var catP=urlP.get('cat');
   if(catP&&CAT_KEYS.includes(catP)) curCat=catP;
+
   buildClientUI();
-  // Всегда начинаем с клиентского экрана
-  setMode('client');
+  setMode('client'); // По умолчанию — клиентский режим
+
   if(isAdmin){
-    // Для админа — показываем переключатель
     document.getElementById('sw').style.display='block';
     loadLeads();
   } else {
     document.getElementById('sw').style.display='none';
   }
+
   if(tg) tg.BackButton.onClick(function(){
     if(document.getElementById('det').classList.contains('on')) closeDet();
   });
@@ -716,10 +724,10 @@ function buildScreen(k){
     '<div class="mgr-block" style="border-color:'+acc+'20">'+
       '<div class="mav" style="background:'+acc+'">👷</div>'+
       '<div style="flex:1"><div class="mn">Директор ADOM</div><div class="mr">+7 708 239 35 72</div></div>'+
-      '<button class="mc" data-action="call">📞</button>'+
+      '<button class="mc" onclick="location.href=\'tel:+77082393572\'">📞</button>'+
     '</div></div>';
   var ctaF  = '<div class="cta-footer">'+
-    '<button class="cta-btn" data-cat="'+k+'" style="background:'+acc+';border-radius:10px">'+
+    '<button class="cta-btn" onclick="doCTA(\''+k+'\')" style="background:'+acc+';border-radius:12px">'+
       info.cta+' →'+
     '</button>'+
     '<div class="cta-footer-note">ADOM · Алматы и весь Казахстан · 50+ проектов</div>'+
@@ -754,7 +762,7 @@ function buildStats(k, acc){
 
 function buildCTA(k, label, acc){
   return '<div class="cta-primary" style="background:#080808">'+
-    '<button class="cta-primary-btn" data-cat="'+k+'" style="background:'+acc+'">'+
+    '<button class="cta-primary-btn" onclick="doCTA(\''+k+'\')" style="background:'+acc+'">'+
       label+' →'+
     '</button>'+
     '<div class="cta-sub-text">менеджер свяжется в течение 1 часа</div>'+
