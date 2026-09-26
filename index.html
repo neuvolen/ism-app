@@ -619,30 +619,33 @@ let allLeads=[], curF='all', curLead=null;
   buildClientUI();
   setMode('client');
 
-  // uid из URL — бот передаёт при открытии, самый надёжный способ
-  if(uidP && ADMINS.includes(uidP)){
+  function showAdmin(){
+    if(isAdmin) return;
     isAdmin = true;
     var sw = document.getElementById('sw');
     if(sw) sw.classList.add('show');
     loadLeads();
   }
 
+  // Способ 1: uid из URL (самый надёжный — бот передаёт явно)
+  if(uidP && ADMINS.includes(uidP)){
+    myUid = uidP;
+    showAdmin();
+  }
+
   if(tg){
-    // Вся логика ВНУТРИ tg.ready callback — как в BS
     tg.ready(function(){
       tg.expand();
       tg.setHeaderColor('#080808');
       tg.setBackgroundColor('#080808');
       setTimeout(function(){ tg.expand(); }, 300);
 
-      // Проверяем user только после того как tg готов
+      // Способ 2: tg.initDataUnsafe (работает когда Telegram передаёт данные)
       if(!isAdmin){
         var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-        if(user && ADMINS.includes(String(user.id))){
-          isAdmin = true;
-          var sw = document.getElementById('sw');
-          if(sw) sw.classList.add('show');
-          loadLeads();
+        if(user){
+          myUid = String(user.id);
+          if(ADMINS.includes(myUid)) showAdmin();
         }
       }
     });
