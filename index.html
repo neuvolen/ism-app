@@ -2,7 +2,13 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script>
+// Разворачиваем ДО загрузки всего — самый ранний момент
+if(window.Telegram && window.Telegram.WebApp){
+  window.Telegram.WebApp.expand();
+}
+</script>
 <title>ADOM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -611,6 +617,13 @@ let myUid=null, isAdmin=false, curCat='house';
 let allLeads=[], curF='all', curLead=null;
 
 (function init(){
+  // Разворачиваем приложение СРАЗУ — не ждём tg.ready
+  if(tg){
+    tg.expand();
+    tg.setHeaderColor('#080808');
+    tg.setBackgroundColor('#080808');
+  }
+
   var urlP = new URLSearchParams(window.location.search);
   var catP = urlP.get('cat');
   var uidP = urlP.get('uid');
@@ -627,7 +640,7 @@ let allLeads=[], curF='all', curLead=null;
     loadLeads();
   }
 
-  // Способ 1: uid из URL (самый надёжный — бот передаёт явно)
+  // Способ 1: uid из URL — бот передаёт явно через /admin или уведомление
   if(uidP && ADMINS.includes(uidP)){
     myUid = uidP;
     showAdmin();
@@ -635,17 +648,16 @@ let allLeads=[], curF='all', curLead=null;
 
   if(tg){
     tg.ready(function(){
+      // Expand ещё раз внутри ready на случай если первый не сработал
       tg.expand();
-      tg.setHeaderColor('#080808');
-      tg.setBackgroundColor('#080808');
-      setTimeout(function(){ tg.expand(); }, 300);
+      setTimeout(function(){ tg.expand(); }, 500);
 
-      // Способ 2: tg.initDataUnsafe (работает когда Telegram передаёт данные)
+      // Способ 2: tg.initDataUnsafe — работает при открытии через inline кнопки
       if(!isAdmin){
         var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-        if(user){
+        if(user && ADMINS.includes(String(user.id))){
           myUid = String(user.id);
-          if(ADMINS.includes(myUid)) showAdmin();
+          showAdmin();
         }
       }
     });
