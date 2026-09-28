@@ -520,7 +520,7 @@ body { font-family:'Space Grotesk',sans-serif; background:var(--w); color:var(--
 .acts { display:flex; flex-direction:column; gap:7px; }
 .abtn { padding:13px; border-radius:11px; font-size:13px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; transition:transform .15s; font-family:'Space Grotesk',sans-serif; letter-spacing:-.1px; }
 .abtn:active { transform:scale(.97); }
-.a1{background:#16a34a;color:#fff;}.a2{background:var(--acc);color:#fff;}.a3{background:var(--k);color:#fff;}
+.a1{background:#16a34a;color:#fff;}.a2{background:var(--acc);color:#fff;}.a3{background:var(--k);color:#fff;}.a4{background:#1a1a1a;color:#ef4444;border:1px solid #3f1010;}
 .warm-item { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--b); align-items:flex-start; }
 .warm-item:last-child { border:none; }
 .wd { width:38px; height:38px; border-radius:9px; background:var(--w); border:1px solid var(--b); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--g); flex-shrink:0; text-align:center; line-height:1.2; }
@@ -748,8 +748,8 @@ function buildScreen(k){
   var mgr   = '<div class="section">'+
     '<div class="mgr-block" style="border-color:'+acc+'20">'+
       '<div class="mav" style="background:'+acc+'">👷</div>'+
-      '<div style="flex:1"><div class="mn">Директор ADOM</div><div class="mr">+7 708 239 35 72</div></div>'+
-      '<button class="mc" onclick="location.href=\'tel:+77082393572\'">📞</button>'+
+      '<div style="flex:1"><div class="mn">Директор ADOM</div><div class="mr">8701 222 00 63</div></div>'+
+      '<button class="mc" onclick="location.href=\'tel:87012220063\'">📞</button>'+
     '</div></div>';
   var ctaF  = '<div class="cta-footer">'+
     '<button class="cta-btn" onclick="doCTA(\''+k+'\')" style="background:'+acc+';border-radius:12px">'+
@@ -1135,7 +1135,7 @@ document.addEventListener('click', function(e){
     curF=filt; renderLeads(); return;
   }
   if(action === 'switchcat'){ switchCat(cat); return; }
-  if(action === 'call'){ location.href='tel:+77082393572'; return; }
+  if(action === 'call'){ location.href='tel:87012220063'; return; }
   if(action === 'closedet'){ closeDet(); return; }
   if(action === 'faq'){ btn.classList.toggle('open'); return; }
   if(action === 'picks'){
@@ -1244,6 +1244,7 @@ function openDet(id){
       '<button class="abtn a1" onclick="doCall()">📞 '+curLead.phone+'</button>'+
       (curLead.username?'<button class="abtn a2" onclick="doMsg()">✉️ @'+curLead.username+'</button>':'')+
       '<button class="abtn a3" onclick="doSave()">💾 Сохранить статус</button>'+
+      '<button class="abtn a4" onclick="doDelete()">🗑 Удалить лида</button>'+
     '</div></div>';
   document.getElementById('det').classList.add('on');
   if(tg) tg.BackButton.show();
@@ -1258,6 +1259,17 @@ function doSave(){
   if(i>=0)allLeads[i]=curLead;
   fetch(GAS+'?action=updateStatus&uid='+encodeURIComponent(curLead.id)+'&status='+encodeURIComponent(curLead.status)).catch(function(){});
   renderAdmin();closeDet();showToast('✅ Статус сохранён');
+}
+function doDelete(){
+  if(!curLead) return;
+  var name = curLead.name || curLead.phone || 'лид';
+  if(!confirm('Удалить ' + name + '?\n\nЭто действие нельзя отменить.')) return;
+  var id = curLead.id;
+  allLeads = allLeads.filter(function(l){ return l.id !== id; });
+  fetch(GAS+'?action=deleteLead&uid='+encodeURIComponent(id)).catch(function(){});
+  closeDet();
+  renderAdmin();
+  showToast('🗑 Лид удалён');
 }
 function sendWarm(idx){
   if(!curLead._warm)curLead._warm={};curLead._warm[idx]=true;openDet(curLead.id);
